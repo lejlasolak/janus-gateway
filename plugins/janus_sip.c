@@ -3170,9 +3170,9 @@ static void *janus_sip_handler(void *data) {
 				JANUS_LOG(LOG_VERB, "Going to negotiate SDES-SRTP (%s)...\n", require_srtp ? "mandatory" : "optional");
 			}
 			/* Get video-orientation extension id from msg_sdp */
-			/* JANUS_LOG(LOG_INFO, "[CALL] BEFORE SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id);
+			JANUS_LOG(LOG_INFO, "[CALL] BEFORE SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id);
 			session->media.video_orientation_extension_id = janus_rtp_header_extension_get_id(msg_sdp, JANUS_RTP_EXTMAP_VIDEO_ORIENTATION);
-			JANUS_LOG(LOG_INFO, "[CALL] AFTER SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id); */
+			JANUS_LOG(LOG_INFO, "[CALL] AFTER SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id);
 
 			/* Parse the SDP we got, manipulate some things, and generate a new one */
 			char sdperror[100];
@@ -3433,9 +3433,9 @@ static void *janus_sip_handler(void *data) {
 				JANUS_LOG(LOG_VERB, "Going to negotiate SDES-SRTP (%s)...\n", session->media.require_srtp ? "mandatory" : "optional");
 			}
                         /* Get video-orientation extension id from msg_sdp */
-                        JANUS_LOG(LOG_INFO, "[ACCEPT] BEFORE SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id);
+                        /* JANUS_LOG(LOG_INFO, "[ACCEPT] BEFORE SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id);
                         session->media.video_orientation_extension_id = janus_rtp_header_extension_get_id(msg_sdp, JANUS_RTP_EXTMAP_VIDEO_ORIENTATION);
-                        JANUS_LOG(LOG_INFO, "[ACCEPT] AFTER SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id);
+                        JANUS_LOG(LOG_INFO, "[ACCEPT] AFTER SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id); */
 
                         /* Parse the SDP we got, manipulate some things, and generate a new one */
 			char sdperror[100];
