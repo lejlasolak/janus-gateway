@@ -6097,7 +6097,7 @@ static void *janus_sip_relay_thread(void *data) {
                                                 JANUS_LOG(LOG_INFO, "RELAYING TO APP. VIDEO ORIENTATION ID IS %d", session->media.video_orientation_extension_id);
                                                 gboolean c = FALSE, f = FALSE, r1 = FALSE, r0 = FALSE;
                                                 if (janus_rtp_header_extension_parse_video_orientation(buffer, bytes,
-                                                        videoorientation_ext_id, &c, &f, &r1, &r0) == 0) {
+                                                        session->media.video_orientation_extension_id, &c, &f, &r1, &r0) == 0) {
                                                         rtp.extensions.video_rotation = 0;
                                                         if (r1 && r0)
                                                                 rtp.extensions.video_rotation = 270;
