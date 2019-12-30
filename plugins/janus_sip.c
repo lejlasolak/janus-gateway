@@ -2157,7 +2157,6 @@ void janus_sip_incoming_rtp(janus_plugin_session *handle, janus_plugin_rtp *pack
 		char *buf = packet->buffer;
 		uint16_t len = packet->length;
 		/* Forward to our SIP peer */
-		JANUS_LOG(LOG_INFO, "METHOD SIP INCOMING RTP, FORWARDING TO SIP PEER, VIDEO ROTATION IS %d", packet->extensions.video_rotation);
 		if(video) {
 			if(!session->media.video_send) {
 				/* Dropping video packet, peer doesn't want to receive it */
@@ -3171,9 +3170,9 @@ static void *janus_sip_handler(void *data) {
 				JANUS_LOG(LOG_VERB, "Going to negotiate SDES-SRTP (%s)...\n", require_srtp ? "mandatory" : "optional");
 			}
 			/* Get video-orientation extension id from msg_sdp */
-			JANUS_LOG(LOG_INFO, "[CALL] BEFORE SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id);
+			/* JANUS_LOG(LOG_INFO, "[CALL] BEFORE SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id);
 			session->media.video_orientation_extension_id = janus_rtp_header_extension_get_id(msg_sdp, JANUS_RTP_EXTMAP_VIDEO_ORIENTATION);
-			JANUS_LOG(LOG_INFO, "[CALL] AFTER SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id);
+			JANUS_LOG(LOG_INFO, "[CALL] AFTER SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id); */
 
 			/* Parse the SDP we got, manipulate some things, and generate a new one */
 			char sdperror[100];
@@ -3581,9 +3580,9 @@ static void *janus_sip_handler(void *data) {
 				goto error;
 			}
                         /* Get video-orientation extension id from msg_sdp */
-                        JANUS_LOG(LOG_INFO, "[UPDATE] BEFORE SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id);
+                        /* JANUS_LOG(LOG_INFO, "[UPDATE] BEFORE SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id);
                         session->media.video_orientation_extension_id = janus_rtp_header_extension_get_id(msg_sdp, JANUS_RTP_EXTMAP_VIDEO_ORIENTATION);
-                        JANUS_LOG(LOG_INFO, "[UPDATE] AFTER SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id);
+                        JANUS_LOG(LOG_INFO, "[UPDATE] AFTER SETTING EXTENSION ID IN SESSION MEDIA %d",  session->media.video_orientation_extension_id); */
 
                         /* Parse the SDP we got, manipulate some things, and generate a new one */
 			char sdperror[100];
