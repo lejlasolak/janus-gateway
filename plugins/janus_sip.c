@@ -6029,6 +6029,21 @@ static void *janus_sip_relay_thread(void *data) {
 					/* Relay to application */
 					janus_plugin_rtp rtp = { .video = FALSE, .buffer = buffer, .length = bytes };
 					janus_plugin_rtp_extensions_reset(&rtp.extensions);
+
+                                        /* Add audio-level extension */
+                                        if(session->media.audio_level_extension_id != -1) {
+                                                gboolean vad = FALSE;
+                                                int level = -1;
+                                                if(janus_rtp_header_extension_parse_audio_level(buffer, bytes,
+                                                        session->media.audio_level_extension_id, &vad, &level) == 0) {
+                                                        rtp.extensions.audio_level = level;
+                                                        rtp.extensions.audio_level_vad = vad;
+                                                }
+                                        }
+
+                                        JANUS_LOG(LOG_INFO, "Audio level extension: vad = %d and level = %d:\n",
+                                                  rtp.extensions.audio_level_vad, rtp.extensions.audio_level);
+
 					gateway->relay_rtp(session->handle, &rtp);
 					continue;
 				} else if(session->media.audio_rtcp_fd != -1 && fds[i].fd == session->media.audio_rtcp_fd) {
@@ -6098,17 +6113,6 @@ static void *janus_sip_relay_thread(void *data) {
 					janus_plugin_rtp rtp = { .video = TRUE, .buffer = buffer, .length = bytes };
 					janus_plugin_rtp_extensions_reset(&rtp.extensions);
 
-					/* Add audio-level extension */
-					if(session->media.audio_level_extension_id != -1) {
-					        gboolean vad = FALSE;
-					        int level = -1;
-					        if(janus_rtp_header_extension_parse_audio_level(buffer, bytes,
-					                session->media.audio_level_extension_id, &vad, &level) == 0) {
-					                rtp.extensions.audio_level = level;
-					                rtp.extensions.audio_level_vad = vad;
-					        }
-					}
-
 					/* Add video-orientation extension */
 					if(session->media.video_orientation_extension_id > 0) {
 					        gboolean c = FALSE, f = FALSE, r1 = FALSE, r0 = FALSE;
@@ -6126,9 +6130,7 @@ static void *janus_sip_relay_thread(void *data) {
 					        }
 					}
 
-                                        JANUS_LOG(LOG_INFO, "Audio level extension: vad = %d and level = %d:\n",
-                                                rtp.extensions.audio_level_vad, rtp.extensions.audio_level);
-                                        JANUS_LOG(LOG_INFO, "Video orientation extensions: rotation = %d and flipped = %d and back camera = %d:\n",
+					JANUS_LOG(LOG_INFO, "Video orientation extensions: rotation = %d and flipped = %d and back camera = %d:\n",
                                                 rtp.extensions.video_rotation, rtp.extensions.video_flipped, rtp.extensions.video_back_camera);
 
                                         gateway->relay_rtp(session->handle, &rtp);
