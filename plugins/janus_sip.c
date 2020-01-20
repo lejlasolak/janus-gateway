@@ -944,6 +944,7 @@ typedef struct janus_sip_media {
 	int pipefd[2];
 	gboolean updated;
 	int video_orientation_extension_id;
+	int audio_level_extension_id;
 } janus_sip_media;
 
 typedef struct janus_sip_session {
@@ -1352,6 +1353,7 @@ static void janus_sip_media_reset(janus_sip_session *session) {
 	session->media.video_send = TRUE;
 	session->media.pre_hold_video_dir = JANUS_SDP_DEFAULT;
 	session->media.video_orientation_extension_id = -1;
+	session->media.audio_level_extension_id = -1;
 	janus_rtp_switching_context_reset(&session->media.context);
 }
 
@@ -1943,6 +1945,7 @@ void janus_sip_create_session(janus_plugin_session *handle, int *error) {
 	session->media.video_send = TRUE;
 	session->media.pre_hold_video_dir = JANUS_SDP_DEFAULT;
 	session->media.video_orientation_extension_id = -1;
+	session->media.audio_level_extension_id = -1;
 	/* Initialize the RTP context */
 	janus_rtp_switching_context_reset(&session->media.context);
 	session->media.pipefd[0] = -1;
@@ -3170,8 +3173,10 @@ static void *janus_sip_handler(void *data) {
 				JANUS_LOG(LOG_VERB, "Going to negotiate SDES-SRTP (%s)...\n", require_srtp ? "mandatory" : "optional");
 			}
 
-			/* Get video-orientation extension id from SDP */
+			/* Get video-orientation extension id from SDP we got */
 			session->media.video_orientation_extension_id = janus_rtp_header_extension_get_id(msg_sdp, JANUS_RTP_EXTMAP_VIDEO_ORIENTATION);
+			/* Get audio-level extension id from SDP we got */
+			session->media.audio_level_extension_id = janus_rtp_header_extension_get_id(msg_sdp, JANUS_RTP_EXTMAP_AUDIO_LEVEL);
 
 			/* Parse the SDP we got, manipulate some things, and generate a new one */
 			char sdperror[100];
@@ -3432,8 +3437,10 @@ static void *janus_sip_handler(void *data) {
 				JANUS_LOG(LOG_VERB, "Going to negotiate SDES-SRTP (%s)...\n", session->media.require_srtp ? "mandatory" : "optional");
 			}
 
-			/* Get video-orientation extension id from SDP */
+			/* Get video-orientation extension id from SDP we got */
 			session->media.video_orientation_extension_id = janus_rtp_header_extension_get_id(msg_sdp, JANUS_RTP_EXTMAP_VIDEO_ORIENTATION);
+			/* Get audio-level extension id from SDP we got */
+			session->media.audio_level_extension_id = janus_rtp_header_extension_get_id(msg_sdp, JANUS_RTP_EXTMAP_AUDIO_LEVEL);
 
 			/* Parse the SDP we got, manipulate some things, and generate a new one */
 			char sdperror[100];
@@ -3578,8 +3585,10 @@ static void *janus_sip_handler(void *data) {
 				goto error;
 			}
 
-			/* Get video-orientation extension id from SDP */
+			/* Get video-orientation extension id from SDP we got */
 			session->media.video_orientation_extension_id = janus_rtp_header_extension_get_id(msg_sdp, JANUS_RTP_EXTMAP_VIDEO_ORIENTATION);
+			/* Get audio-level extension id from SDP we got */
+			session->media.audio_level_extension_id = janus_rtp_header_extension_get_id(msg_sdp, JANUS_RTP_EXTMAP_AUDIO_LEVEL);
 
 			/* Parse the SDP we got, manipulate some things, and generate a new one */
 			char sdperror[100];
@@ -6088,6 +6097,17 @@ static void *janus_sip_relay_thread(void *data) {
 					/* Relay to application */
 					janus_plugin_rtp rtp = { .video = TRUE, .buffer = buffer, .length = bytes };
 					janus_plugin_rtp_extensions_reset(&rtp.extensions);
+
+					/* Add audio-level extension */
+					if(session->media.audio_level_extension_id != -1) {
+					        gboolean vad = FALSE;
+					        int level = -1;
+					        if(janus_rtp_header_extension_parse_audio_level(buffer, bytes,
+					                stream->audiolevel_ext_id, &vad, &level) == 0) {
+					                rtp.extensions.audio_level = level;
+					                rtp.extensions.audio_level_vad = vad;
+					        }
+					}
 
 					/* Add video-orientation extension */
 					if(session->media.video_orientation_extension_id > 0) {
