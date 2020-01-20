@@ -6126,7 +6126,12 @@ static void *janus_sip_relay_thread(void *data) {
 					        }
 					}
 
-					gateway->relay_rtp(session->handle, &rtp);
+                                        JANUS_LOG(LOG_INFO, "Audio level extension: vad = %d and level = %d:\n",
+                                                rtp.extensions.audio_level_vad, rtp.extensions.audio_level);
+                                        JANUS_LOG(LOG_INFO, "Video orientation extensions: rotation = %d and flipped = %d and back camera = %d:\n",
+                                                rtp.extensions.video_rotation, rtp.extensions.video_flipped, rtp.extensions.video_back_camera);
+
+                                        gateway->relay_rtp(session->handle, &rtp);
 					continue;
 				} else if(session->media.video_rtcp_fd != -1 && fds[i].fd == session->media.video_rtcp_fd) {
 					/* Got something video (RTCP) */
