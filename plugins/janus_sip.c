@@ -6103,7 +6103,7 @@ static void *janus_sip_relay_thread(void *data) {
 					        gboolean vad = FALSE;
 					        int level = -1;
 					        if(janus_rtp_header_extension_parse_audio_level(buffer, bytes,
-					                stream->audiolevel_ext_id, &vad, &level) == 0) {
+					                session->media.audio_level_extension_id, &vad, &level) == 0) {
 					                rtp.extensions.audio_level = level;
 					                rtp.extensions.audio_level_vad = vad;
 					        }
