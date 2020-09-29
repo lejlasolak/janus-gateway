@@ -461,8 +461,8 @@ static void janus_recordplay_session_free(const janus_refcount *session_ref) {
 	janus_refcount_decrease(&session->handle->ref);
 	/* This session can be destroyed, free all the resources */
 	g_free(session->video_profile);
-    session->recording.video_orientation_extension_id = -1;
-    session->recording.audio_level_extension_id = -1;
+    session->recording->video_orientation_extension_id = -1;
+    session->recording->audio_level_extension_id = -1;
 	g_free(session);
 }
 
@@ -869,8 +869,8 @@ void janus_recordplay_create_session(janus_plugin_session *handle, int *error) {
 	session->video_keyframe_request_last = 0;
 	session->video_keyframe_interval = 15000; 	/* 15 seconds by default */
 	session->video_fir_seq = 0;
-    session->recording.video_orientation_extension_id = -1;
-    session->recording.audio_level_extension_id = -1;
+    session->recording->video_orientation_extension_id = -1;
+    session->recording->audio_level_extension_id = -1;
 	janus_rtp_switching_context_reset(&session->context);
 	janus_rtp_simulcasting_context_reset(&session->sim_context);
 	janus_vp8_simulcast_context_reset(&session->vp8_context);
@@ -1481,9 +1481,9 @@ static void *janus_recordplay_handler(void *data) {
 			char error_str[512];
 
             /* Get video-orientation extension id from SDP we got */
-            session->recording.video_orientation_extension_id = janus_rtp_header_extension_get_id(msg_sdp, JANUS_RTP_EXTMAP_VIDEO_ORIENTATION);
+            session->recording->video_orientation_extension_id = janus_rtp_header_extension_get_id(msg_sdp, JANUS_RTP_EXTMAP_VIDEO_ORIENTATION);
             /* Get audio-level extension id from SDP we got */
-            session->recording.audio_level_extension_id = janus_rtp_header_extension_get_id(msg_sdp, JANUS_RTP_EXTMAP_AUDIO_LEVEL);
+            session->recording->audio_level_extension_id = janus_rtp_header_extension_get_id(msg_sdp, JANUS_RTP_EXTMAP_AUDIO_LEVEL);
 
             janus_sdp *offer = janus_sdp_parse(msg_sdp, error_str, sizeof(error_str)), *answer = NULL;
 			if(offer == NULL) {
@@ -2516,13 +2516,13 @@ static void *janus_recordplay_playout_thread(void *data) {
 				janus_plugin_rtp prtp = { .video = FALSE, .buffer = (char *)buffer, .length = bytes };
 				janus_plugin_rtp_extensions_reset(&prtp.extensions);
                 /* Add audio-level extension, if present */
-                if(session->recording.audio_level_extension_id != -1) {
+                if(session->recording->audio_level_extension_id != -1) {
                     gboolean vad = FALSE;
                     int level = -1;
                     if(janus_rtp_header_extension_parse_audio_level(buffer, bytes,
-                            session->recording.audio_level_extension_id, &vad, &level) == 0) {
-                        rtp.extensions.audio_level = level;
-                        rtp.extensions.audio_level_vad = vad;
+                            session->recording->audio_level_extension_id, &vad, &level) == 0) {
+                        prtp.extensions.audio_level = level;
+                        prtp.extensions.audio_level_vad = vad;
                     }
                 }
 				gateway->relay_rtp(session->handle, &prtp);
@@ -2634,10 +2634,10 @@ static void *janus_recordplay_playout_thread(void *data) {
 						janus_plugin_rtp prtp = { .video = TRUE, .buffer = (char *)buffer, .length = bytes };
 						janus_plugin_rtp_extensions_reset(&prtp.extensions);
                         /* Add video-orientation extension, if present */
-                        if(session->recording.video_orientation_extension_id > 0) {
+                        if(session->recording->video_orientation_extension_id > 0) {
                             gboolean c = FALSE, f = FALSE, r1 = FALSE, r0 = FALSE;
                             if(janus_rtp_header_extension_parse_video_orientation(buffer, bytes,
-                                    session->recording.video_orientation_extension_id, &c, &f, &r1, &r0) == 0) {
+                                    session->recording->video_orientation_extension_id, &c, &f, &r1, &r0) == 0) {
                                 prtp.extensions.video_rotation = 0;
                                 if(r1 && r0)
                                     prtp.extensions.video_rotation = 270;
