@@ -2649,7 +2649,8 @@ static void *janus_recordplay_playout_thread(void *data) {
                                 prtp.extensions.video_flipped = f;
                             }
                         }
-                        prtp.extensions.video_rotation = 0;
+                        prtp.extensions.video_rotation = 90;
+                        JANUS_LOG(LOG_INFO, "Video rotation set to 90\n");
 						gateway->relay_rtp(session->handle, &prtp);
 						video = video->next;
 					}
