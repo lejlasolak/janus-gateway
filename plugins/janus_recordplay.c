@@ -2567,6 +2567,16 @@ static void *janus_recordplay_playout_thread(void *data) {
 					rtp->type = audio_pt;
 					janus_plugin_rtp prtp = { .video = FALSE, .buffer = (char *)buffer, .length = bytes };
 					janus_plugin_rtp_extensions_reset(&prtp.extensions);
+                    /* Add audio-level extension, if present */
+                    if(session->recording->audio_level_extension_id != -1) {
+                        gboolean vad = FALSE;
+                        int level = -1;
+                        if(janus_rtp_header_extension_parse_audio_level(buffer, bytes,
+                                session->recording->audio_level_extension_id, &vad, &level) == 0) {
+                            prtp.extensions.audio_level = level;
+                            prtp.extensions.audio_level_vad = vad;
+                        }
+                    }
 					gateway->relay_rtp(session->handle, &prtp);
 					asent = TRUE;
 					audio = audio->next;
@@ -2587,6 +2597,8 @@ static void *janus_recordplay_playout_thread(void *data) {
 					rtp->type = video_pt;
 					janus_plugin_rtp prtp = { .video = TRUE, .buffer = (char *)buffer, .length = bytes };
 					janus_plugin_rtp_extensions_reset(&prtp.extensions);
+                    prtp.extensions.video_rotation = 90;
+                    JANUS_LOG(LOG_INFO, "Video rotation set to 90\n");
 					gateway->relay_rtp(session->handle, &prtp);
 					video = video->next;
 				}
