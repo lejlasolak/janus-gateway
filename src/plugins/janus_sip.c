@@ -2850,8 +2850,10 @@ static void janus_sip_hangup_media_internal(janus_plugin_session *handle) {
 		session->media.on_hold = FALSE;
 
 		/* Send a BYE or respond with 480 */
-		if(janus_sip_call_is_established(session) || session->status == janus_sip_call_status_inviting)
+		if(janus_sip_call_is_established(session) || session->status == janus_sip_call_status_inviting) {
+			JANUS_LOG(LOG_ERR, "Invoking nua bye without headers on janus_sip_hangup_media_internal");
 			nua_bye(session->stack->s_nh_i, TAG_END());
+		}
 		else
 			nua_respond(session->stack->s_nh_i, 480, sip_status_phrase(480), TAG_END());
 
@@ -4619,6 +4621,7 @@ static void *janus_sip_handler(void *data) {
 			janus_sip_call_update_status(session, janus_sip_call_status_closing);
 			char custom_headers[2048];
 			janus_sip_parse_custom_headers(root, (char *)&custom_headers, sizeof(custom_headers));
+			JANUS_LOG(LOG_ERR, "Invoking nua bye with custom headers");
 			nua_bye(session->stack->s_nh_i,
 				TAG_IF(strlen(custom_headers) > 0, SIPTAG_HEADER_STR(custom_headers)),
 				TAG_END());
@@ -6036,6 +6039,7 @@ void janus_sip_sofia_callback(nua_event_t event, int status, char const *phrase,
 				session->media.ready = FALSE;
 				session->media.on_hold = FALSE;
 				janus_sip_call_update_status(session, janus_sip_call_status_closing);
+				JANUS_LOG(LOG_ERR, "Invoking nua bye without headers on janus_sip_sofia_callback 1");
 				nua_bye(nh, TAG_END());
 				janus_mutex_lock(&session->mutex);
 				g_free(session->callee);
@@ -6054,6 +6058,7 @@ void janus_sip_sofia_callback(nua_event_t event, int status, char const *phrase,
 				session->media.ready = FALSE;
 				session->media.on_hold = FALSE;
 				janus_sip_call_update_status(session, janus_sip_call_status_closing);
+				JANUS_LOG(LOG_ERR, "Invoking nua bye without headers on janus_sip_sofia_callback 2");
 				nua_bye(nh, TAG_END());
 				janus_mutex_lock(&session->mutex);
 				g_free(session->callee);
